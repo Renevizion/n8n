@@ -228,14 +228,20 @@ export abstract class AbstractServer {
 			this.app.all(`/${this.endpointMcpTest}/*path`, testWebhooksRequestHandler);
 		}
 
-		// Block bots from scanning the application
+		// Block bots from scanning the application, but allow legitimate mobile browsers
 		const checkIfBot = isbot.spawn(['bot']);
 		this.app.use((req, res, next) => {
 			const userAgent = req.headers['user-agent'];
 			if (userAgent && checkIfBot(userAgent)) {
-				this.logger.info(`Blocked ${req.method} ${req.url} for "${userAgent}"`);
-				res.status(204).end();
-			} else next();
+				// Allow legitimate mobile browsers (iOS, Android, Opera Mini, etc.)
+				const isMobileBrowser = /(iPhone|iPad|iPod|Android).*Mobile|Mobile.*(Safari|Firefox)|Chrome.*Mobile|Opera.*Mini/i.test(userAgent);
+				if (!isMobileBrowser) {
+					this.logger.info(`Blocked ${req.method} ${req.url} for "${userAgent}"`);
+					res.status(204).end();
+					return;
+				}
+			}
+			next();
 		});
 
 		if (inDevelopment) {
