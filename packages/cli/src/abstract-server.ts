@@ -233,8 +233,8 @@ export abstract class AbstractServer {
 		this.app.use((req, res, next) => {
 			const userAgent = req.headers['user-agent'];
 			if (userAgent && checkIfBot(userAgent)) {
-				// Allow legitimate mobile browsers (iOS Safari, Chrome Mobile, Firefox Mobile, etc.)
-				const isMobileBrowser = /Mobile Safari|Chrome.*Mobile|Firefox.*Mobile|Opera.*Mini|Android.*Chrome|Mobile.*Firefox/i.test(userAgent);
+				// Allow legitimate mobile browsers (iOS, Android, Opera Mini, etc.)
+				const isMobileBrowser = /(iPhone|iPad|iPod|Android).*Mobile|Mobile.*(Safari|Firefox)|Chrome.*Mobile|Opera.*Mini/i.test(userAgent);
 				if (!isMobileBrowser) {
 					this.logger.info(`Blocked ${req.method} ${req.url} for "${userAgent}"`);
 					res.status(204).end();
